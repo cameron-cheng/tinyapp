@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/cameron-cheng/tinyapp/issues"
   },
-  "homepage": "https://github.com/cameron-cheng/tinyapp#readme"
+  "homepage": "https://github.com/cameron-cheng/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
