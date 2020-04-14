@@ -20,8 +20,8 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: "https://www.google.com/"}
+app.get("/urls/:shortURL", (req, res) => { // /users/:username/:post => /users/kurt/something => { params: {username: kurt, post: something} }
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
   res.render("urls_show", templateVars);
 });
 
@@ -39,6 +39,7 @@ app.get("/hello", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
+  urlDatabase[generateRandomString(6)] = req.body.longURL
   res.send("Ok");
 });
 
@@ -51,7 +52,7 @@ app.post("/urls", (req, res) => {
 //   res.send(`a =${a}`);
 // });
 
-function generateRandomString() {
+function generateRandomString(length) {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
