@@ -81,6 +81,11 @@ app.post("/login", (req, res) => {
   res.redirect('/urls/');
 })
 
+//Logout Cookie Route
+app.post("/logout", (req, res) => {
+  res.clearCookie("username", req.body.username)
+  res.redirect('/urls/');
+})
 
 
 app.listen(PORT, () => {
