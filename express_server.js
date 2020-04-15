@@ -30,13 +30,15 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  res.render("urls_new", { username: ''});
 });
 
-app.get("/urls/:shortURL", (req, res) => { // /users/:username/:post => /users/kurt/something => { params: {username: kurt, post: something} }
-  let templateVars = { username: req.cookies.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
-  res.render("urls_show", templateVars);
+//Get Registration Page
+app.get("/urls/register", (req, res) => {
+  let templateVars = {username: ''};
+  res.render("urls_register", templateVars)
 });
+
 
 app.get("/", (req, res) => {
   res.send("Hello!")
@@ -62,19 +64,6 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
-});
-
-app.post("/urls/:id/", (req, res) => {
-  const shortURL = req.params.id;
-  const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
-});
-
 //Login Cookie Route
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
@@ -86,6 +75,27 @@ app.post("/logout", (req, res) => {
   res.clearCookie("username", req.body.username)
   res.redirect('/urls/');
 })
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  console.log('urlDatabase[shortURL]', urlDatabase[shortURL]);
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+});
+
+app.get("/urls/:shortURL", (req, res) => { // /users/:username/:post => /users/kurt/something => { params: {username: kurt, post: something} }
+  let templateVars = { username: req.cookies.username, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] }
+  res.render("urls_show", templateVars);
+});
+
+app.post("/urls/:id/", (req, res) => {
+  const shortURL = req.params.id;
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/${shortURL}`);
+});
+
+
 
 
 app.listen(PORT, () => {
