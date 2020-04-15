@@ -24,7 +24,8 @@ function generateRandomString(length) {
 }
 
 app.get("/urls", (req, res) => {
-  let templateVars = { username: req.cookies.usernames, urls: urlDatabase };
+  let templateVars = { username: req.cookies.username, urls: urlDatabase };
+  console.log(templateVars);
   res.render("urls_index", templateVars);
 });
 
