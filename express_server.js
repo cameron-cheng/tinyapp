@@ -36,19 +36,18 @@ function generateRandomString(length) {
   return result;
 }
 
+
 //Check if email submitted is an empty string or exists in database
-function existingUser(req, res) {
-  const email = req.body.email;
-  const password = req.body.password;
-  if(email === "" && password === ""){
+function existingUser(email) {
+  if(email === ""){
     return false;
   } 
   for(const id in users){
     if(users[id].email === email){
-      return false
+      return true;
     }
   }
-  return true;
+  return false;
 }; 
 
 app.get("/", (req, res) => {
@@ -79,13 +78,23 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//Get Registration Page
+//Render Registration Page
 app.get("/urls/register", (req, res) => {
+  console.log('hello');
   const userID = req.cookies.user_id;
   const user = users[userID];
   let templateVars = {user}
-  res.render("urls_register", templateVars)
+  res.render("urls_register", templateVars);
 });
+
+//Render Login Page
+app.get("/urls/login", (req, res) => {
+  const userID = req.cookies.user_id;
+  const user = users[userID];
+  let templateVars = {user}
+  res.render("urls_login", templateVars);
+})
+
 
 //Runs random string generator for shortURL & randomID
 app.post("/urls", (req, res) => {
@@ -93,31 +102,51 @@ app.post("/urls", (req, res) => {
   res.redirect("/urls");
 });
 
+// Check login function
+const checkLogin = function(email, password) {
+  for (id in users ) {
+    if(users[id].email === email){
+      if (users[id].password === password) {
+        return id;
+      }
+    }
+  }
+  return;
+}
 //Login Cookie Route - Set Cookie
 app.post("/login", (req, res) => {
-  res.cookie("username", req.body.username);
-  res.redirect('/urls/');
+  const email = req.body.email;
+  const password = req.body.password;
+  const randomID = checkLogin(email, password)
+  if (randomID) {
+    res.cookie("user_id", randomID);
+    res.redirect('/urls/');
+  } else {
+    res.send(403).send('Unavailable to Login');
+  }
+
 })
 
 //Logout Cookie Route
 app.post("/logout", (req, res) => {
-  res.clearCookie("username", req.body.username)
+  res.clearCookie("user_id");
   res.redirect('/urls/');
 })
 
 //Post User Registration
 app.post("/register", (req, res) => {
-  if (existingUser(req, res)) {
-    const email = req.body.email;
-    const password = req.body.password;
+  const email = req.body.email;
+  const password = req.body.password;
+  if (existingUser(email)) {
+    res.status(400).send("error")
+  } else{
     let randomID = generateRandomString(6)
     users[randomID] = { randomID, email, password };
     res.cookie("user_id", randomID);
     res.redirect("/urls");
-  } else{
-  res.status(400).send("error")
-  };
+  };    
 })
+
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
