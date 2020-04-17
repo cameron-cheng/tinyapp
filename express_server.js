@@ -4,7 +4,7 @@ const PORT = 8080;
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const helpers = require('helpers.js')
+const helpers = require('./helpers.js')
 
 app.use(cookieSession({
   name: 'session',
@@ -69,13 +69,10 @@ const checkLogin = function(email, password) {
 const urlsForUser = function(id) {
   const urls = {};
   for (key in urlDatabase) {
-    console.log('id', id);
-    console.log('key.userID', key.userID);
     if (id === urlDatabase[key].userID) {
       urls[key] = urlDatabase[key]
     }
   } 
-  console.log('urls:', urls);
   return urls; 
 }
 
@@ -104,12 +101,8 @@ app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
   const user = users[userID];
   
-  console.log('req.session.user_id:', req.session.user_id);
-  
   if(user) {
     let templateVars = {user, urls: urlsForUser(userID) };
-    console.log('userID:', userID);
-    console.log('templateVars', templateVars);
     res.render("urls_index", templateVars);
   } else {
     res.redirect("/urls/login")
