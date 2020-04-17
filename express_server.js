@@ -64,10 +64,14 @@ const checkLogin = function(email, password) {
 const urlsForUser = function(id) {
   const urls = {};
   for (key in urlDatabase) {
-    if (id === key.userID) {
+    console.log('id', id);
+    console.log('key.userID', key.userID);
+    if (id === urlDatabase[key].userID) {
       urls[key] = urlDatabase[key]
+
     }
   } 
+  console.log('urls:', urls);
   return urls; 
 }
 
@@ -95,15 +99,15 @@ app.get("/hello", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.cookies.user_id;
   const user = users[userID];
-  let templateVars = {user, urls: urlDatabase };
-
+  
   if(user) {
-    urlsForUser(user);
+    let templateVars = {user, urls: urlsForUser(userID) };
+    console.log('userID:', userID);
+    console.log('templateVars', templateVars);
     res.render("urls_index", templateVars);
   } else {
     res.redirect("/urls/login")
   }
-  
 });
 
 //Render New URLs Page
@@ -122,7 +126,6 @@ app.get("/urls/new", (req, res) => {
 
 //Render Registration Page
 app.get("/urls/register", (req, res) => {
-  console.log('hello');
   const userID = req.cookies.user_id;
   const user = users[userID];
   let templateVars = {user}
@@ -137,12 +140,15 @@ app.get("/urls/login", (req, res) => {
   res.render("urls_login", templateVars);
 })
 
-//Generate Random ID for URL and User
+//Generate Random ID for URL and User & Create new URL
 app.post("/urls", (req, res) => {
+  const userID = req.cookies.user_id;
   urlDatabase[generateRandomString(6)] = { 
     longURL: req.body.longURL,
-    userID: req.user.id
+    userID
   };
+  console.log('urlDatabase:', urlDatabase);
+  console.log('userID:', userID);
   res.redirect("/urls");
 });
 
@@ -183,10 +189,15 @@ app.post("/register", (req, res) => {
 
 //Delete URL
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  console.log('urlDatabase[shortURL]', urlDatabase[shortURL]);
+  const userID = req.cookies.user_id;
+  const urlObj = urlDatabase[req.params.shortURL];
+  
+  if (urlObj.userID === userID) {
   delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  res.redirect("/urls"); 
+  } else {
+    res.redirect('/urls/register');
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => { 
@@ -202,10 +213,18 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:id/", (req, res) => {
-  const shortURL = req.params.id;
+
+  const userID = req.cookies.user_id;
+  const urlObj = urlDatabase[req.params.id];
+
+  if (urlObj.userID === userID) {
+    const shortURL = req.params.id;
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
   res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.redirect('/urls/register')
+  }
 });
 
 app.listen(PORT, () => {
