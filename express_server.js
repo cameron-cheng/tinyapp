@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -50,9 +51,9 @@ function existingUser(email) {
 
 // Check login function
 const checkLogin = function(email, password) {
-  for (id in users ) {
-    if(users[id].email === email){
-      if (users[id].password === password) {
+  for (const id in users) {
+    if(users[id].email === email) {
+      if (bcrypt.compareSync(password, users[id].password)) {
         return id;
       }
     }
@@ -68,7 +69,6 @@ const urlsForUser = function(id) {
     console.log('key.userID', key.userID);
     if (id === urlDatabase[key].userID) {
       urls[key] = urlDatabase[key]
-
     }
   } 
   console.log('urls:', urls);
@@ -121,7 +121,6 @@ app.get("/urls/new", (req, res) => {
   } else {
     res.render("urls_new", templateVars);
   } 
-
 });
 
 //Render Registration Page
@@ -147,8 +146,6 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID
   };
-  console.log('urlDatabase:', urlDatabase);
-  console.log('userID:', userID);
   res.redirect("/urls");
 });
 
@@ -164,7 +161,6 @@ app.post("/login", (req, res) => {
   } else {
     res.send(403).send('Unavailable to Login');
   }
-
 })
 
 //Logout Cookie Route
@@ -177,11 +173,13 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   if (existingUser(email)) {
     res.status(400).send("error")
   } else{
     let randomID = generateRandomString(6)
-    users[randomID] = { randomID, email, password };
+    users[randomID] = { randomID, email, password: hashedPassword };
     res.cookie("user_id", randomID);
     res.redirect("/urls");
   };    
@@ -213,7 +211,6 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:id/", (req, res) => {
-
   const userID = req.cookies.user_id;
   const urlObj = urlDatabase[req.params.id];
 
